@@ -1,0 +1,10 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/NonLinearPDEPricer/FileContentIndex
+/.vs/NonLinearPDEPricer/v17
+/.vs/PDESolver_NonLinear/FileContentIndex
+/.vs/PDESolver_NonLinear/v17
+/.vs
+/PDESolver_NonLinear/__pycache__

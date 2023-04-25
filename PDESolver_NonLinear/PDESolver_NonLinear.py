@@ -33,6 +33,7 @@ def displayGreeksNonLinear(x_axis, y_axis, y_axis_lin, names):
         axis[i].plot(x_axis[i], y_axis[i], x_axis[i], y_axis_lin[i])
         axis[i].set_title(names[i])
         axis[i].grid(True)
+        axis[i].legend(["Non-Linear PDE", "Linear PDE"])
     plt.show()
 
 if __name__ == '__main__':
@@ -44,45 +45,51 @@ if __name__ == '__main__':
     underlying = Underlying(spot = S0, vol = vol_non_linear)
 
     # Now we declare the payoff.
-    payoff = Payoff.DownAndOutPut({
+    """payoff = Payoff.DownAndOutPut({
         "Notional": -1.0,
         "Expiry": 0.01,
         "Strike": 4200.0,
         "KOBarrier": 3900.0,
         "Rebate": 0.0
-    })
-    """payoff = Payoff.DoubleNoTouch({
+    })"""
+    payoff = Payoff.DoubleNoTouch({
         "Notional": -1.0,
-        "Expiry": 1.0 / 12.0,
+        "Expiry": 2.0 / 12.0,
         "KOBarrier_Down": 0.80 * S0,
         "KOBarrier_Up": 1.20 * S0
-    })"""
+    })
 
     # Let's now run the PDE engine by sliding the spots, 
     # and computing the risks (Premium, Delta, Gamma and Non-Linear Surprime) for every slide.
     nb_slides = 100
-    min_spot, max_spot = 3800.0, 4500.0
+    min_spot, max_spot = 0.75 * S0, 1.25 * S0
     spots = np.linspace(min_spot, max_spot, nb_slides)
     greek_names = Greeks.getGreeksNames()
     nb_greeks = len(greek_names)
     greeks = np.zeros((nb_greeks, nb_slides))
+    greeks_linear = np.zeros((nb_greeks, nb_slides))
 
     # Compute the Greeks with multi-threading.
     with Pool() as p:
         result = p.starmap(computeGreeksAtSpot, [(s, payoff, underlying) for s in spots])
         for i in range(nb_slides):
             greeks[:, i] = result[i]
-
-    # Finally, we display the Greeks
-    displayGreeks([spots] * nb_greeks, greeks[range(nb_greeks)], greek_names)
-
-    # Compare Linear and Non-Linear Greeks now.
     if underlying.isNonLinear():
-        greeks_linear = np.zeros((nb_greeks, nb_slides))
-        vol = underlying.getVol()
-        underlying.setVol(0.5 * (vol[0] + vol[1]))
+        # Also compute the Greeks with a linear volatility to assess the difference.
         with Pool() as p:
+            vol = underlying.getVol()
+            underlying.setVol(0.5 * (vol[0] + vol[1]))
             result = p.starmap(computeGreeksAtSpot, [(s, payoff, underlying) for s in spots])
             for i in range(nb_slides):
                 greeks_linear[:, i] = result[i]
+    # Finally, we display the Greeks
         displayGreeksNonLinear([spots] * nb_greeks, greeks[range(nb_greeks)], greeks_linear[range(nb_greeks)], greek_names)
+    else:
+        displayGreeks([spots] * nb_greeks, greeks[range(nb_greeks)], greek_names)
+
+    
+    
+
+    
+            
+        
