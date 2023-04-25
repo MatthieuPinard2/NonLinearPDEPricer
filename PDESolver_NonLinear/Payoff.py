@@ -24,7 +24,7 @@ class Payoff(ABC):
         return NotImplemented
     # This function sets the boundaries at every solving step.
     @abstractmethod
-    def getDirichletBoundaries(self, S, t, solution):
+    def getDirichletBoundaries(self, S, t):
         return NotImplemented
     # This function returns the Down/Up barrier as a pair. (+/- infty is no barrier)
     def getContinousBarriers(self):
@@ -45,7 +45,7 @@ class AmericanCall(Payoff):
         return np.maximum(exercise_value, solution)
     def getPayoff(self, S):
         return np.maximum(S - self.strike, 0.0)
-    def getDirichletBoundaries(self, S, t, solution):
+    def getDirichletBoundaries(self, S, t):
         return (0.0, np.maximum(S[-1] - self.strike, 0.0))
 
 class UpAndOutCallSpread(Payoff):
@@ -63,7 +63,7 @@ class UpAndOutCallSpread(Payoff):
         upper_call = np.maximum(S - self.upper_strike, 0.0)
         ko_indicator = barrier(S, self.ko_barrier, is_down=False, is_out=True)
         return (call - upper_call) * ko_indicator
-    def getDirichletBoundaries(self, S, t, solution):
+    def getDirichletBoundaries(self, S, t):
         return (0.0, 0.0)
     def getContinousBarriers(self):
         return (-np.inf, self.ko_barrier)
@@ -82,7 +82,7 @@ class DownAndOutPut(Payoff):
         put = np.maximum(self.strike - S, 0.0)
         ko_indicator = barrier(S, self.ko_barrier, is_down=True, is_out=True)
         return put * ko_indicator + self.rebate * (1.0 - ko_indicator)
-    def getDirichletBoundaries(self, S, t, solution):
+    def getDirichletBoundaries(self, S, t):
         return (self.rebate, 0.0)
     def getContinousBarriers(self):
         return (self.ko_barrier, +np.inf)
@@ -102,7 +102,7 @@ class DoubleNoTouch(Payoff):
         ko_indicator_down = barrier(S, self.ko_barrier_down, is_down=True, is_out=True)
         ko_indicator_up = barrier(S, self.ko_barrier_up, is_down=False, is_out=True)
         return ko_indicator_down * ko_indicator_up
-    def getDirichletBoundaries(self, S, t, solution):
+    def getDirichletBoundaries(self, S, t):
         return (0.0, 0.0)
     def getContinousBarriers(self):
         return (self.ko_barrier_down, self.ko_barrier_up)

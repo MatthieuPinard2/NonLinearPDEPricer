@@ -60,7 +60,7 @@ class NonLinearPDESolver:
             bandedMatrix[1, :] = (1.0 + 2.0 * halfVar * secondOrder)
             bandedMatrix[0, bandRange + 1] = halfVar[bandRange] * ( firstOrder - secondOrder)
             solution_after = solution_before.copy()
-            boundaries = self.payoff.getDirichletBoundaries(self.s_mesh, self.t_mesh[i + 1], solution_after)
+            boundaries = self.payoff.getDirichletBoundaries(self.s_mesh, self.t_mesh[i + 1])
             solution_after[0]  -= bandedMatrix[2, 0] * boundaries[0]
             solution_after[-1] -= bandedMatrix[0, -1] * boundaries[-1]
             lin.solve_banded((1, 1), bandedMatrix, solution_after, overwrite_ab=True, overwrite_b=True, check_finite=False)
